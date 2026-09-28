@@ -6,22 +6,39 @@ from ml.nlp_engine import analyze_resume
 from ml.document_reader import extract_text
 from ml.similarity_engine import calculate_text_similarity
 from ml.recommendation_engine import generate_recommendations
+
+
+# --------------------------------------------------
+# Create FastAPI application
+# --------------------------------------------------
+
 app = FastAPI(
     title="CareerAI",
     description="AI-powered Resume and Job Description Analyzer",
     version="1.0.0"
 )
 
+
+# --------------------------------------------------
+# CORS Configuration
+# --------------------------------------------------
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=[
+        "https://career-ai-chi-seven.vercel.app",
+        "http://localhost:5173"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 
+# --------------------------------------------------
 # Supported resume formats
+# --------------------------------------------------
+
 ALLOWED_EXTENSIONS = {
     ".pdf",
     ".docx",
@@ -29,12 +46,20 @@ ALLOWED_EXTENSIONS = {
 }
 
 
+# --------------------------------------------------
+# Home route
+# --------------------------------------------------
+
 @app.get("/")
 def home():
     return {
         "message": "CareerAI backend is running!"
     }
 
+
+# --------------------------------------------------
+# Analyze resume
+# --------------------------------------------------
 
 @app.post("/analyze")
 async def analyze(
@@ -198,9 +223,17 @@ async def analyze(
         return result
 
 
+    # -----------------------------------
+    # Handle expected HTTP errors
+    # -----------------------------------
+
     except HTTPException:
         raise
 
+
+    # -----------------------------------
+    # Handle unexpected errors
+    # -----------------------------------
 
     except Exception as e:
 
@@ -210,12 +243,11 @@ async def analyze(
         )
 
 
+    # -----------------------------------
+    # 13. Delete temporary resume file
+    # -----------------------------------
+
     finally:
 
-        # -----------------------------------
-        # 13. Delete temporary resume file
-        # -----------------------------------
-
         if os.path.exists(file_path):
-
             os.remove(file_path)
